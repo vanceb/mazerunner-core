@@ -56,6 +56,26 @@ class Mouse {
     m_heading = NORTH;
   }
 
+  /* Testbed function*/
+  void svb_test(bool hand_start = false) {
+    // Reset the mouse
+    motion.reset_drive_system();
+    // Enable sensing
+    sensors.enable();
+    // We are in the start cell
+    m_location = START;
+    m_heading = NORTH;
+    motion.set_position(HALF_CELL);
+    // Wait to go
+    sensors.wait_for_user_start();
+    // Move to sensing position
+    motion.move(SENSING_POSITION, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    motion.turn(-90, SEARCH_TURN_SPEED, 0, SEARCH_ACCELERATION);
+    motion.stop();
+    sensors.disable();
+    motion.reset_drive_system();
+  }
+
   /**
    * change the mouse heading but do not physically turn
    */
@@ -117,9 +137,29 @@ class Mouse {
    */
 
   void turn_IP180() {
+    motion.reset_drive_system();
     static int direction = 1;
     direction *= -1;  // alternate direction each time it is called
     motion.spin_turn(direction * 180, OMEGA_SPIN_TURN, ALPHA_SPIN_TURN);
+    motion.reset_drive_system();
+  }
+
+  /***
+   * Turn in place
+   *
+   * turn_IP90 is a convenience function that will turn in the direction
+   * of the occluded sensor (left or right)
+   *
+   * The turn_IP90L and turn_IP90R do the actual turns
+   */
+
+  void turn_IP90() {
+    uint8_t side = sensors.wait_for_user_start();
+    if (side == LEFT_START) {
+      turn_IP90L();
+    } else {
+      turn_IP90R();
+    }
   }
 
   void turn_IP90R() {
@@ -766,6 +806,41 @@ class Mouse {
     Serial.println();
     delay(200);
     sensors.disable();
+  }
+
+  void show_encoders_once() {
+    reporter.encoders_header();
+    reporter.print_encoders();
+    Serial.println();
+  }
+
+  void show_encoders() {
+    reporter.encoders_header();
+    while (not switches.button_pressed()) {
+      reporter.print_encoders();
+    }
+    switches.wait_for_button_release();
+    Serial.println();
+  }
+
+  /***
+   * Move forward 1m to allow for calibration of the drive system
+   */
+  void fwd_1m() {
+    reporter.print_justified(encoders.robot_distance(), 5);
+    reporter.print_justified(encoders.robot_angle(), 5);
+    Serial.println();
+    uint8_t side = sensors.wait_for_user_start();
+    motion.reset_drive_system();
+    sensors.set_steering_mode(STEERING_OFF);
+    // move to the boundary with the next cell
+    motion.move(1000, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+
+    reporter.print_justified(encoders.robot_distance(), 5);
+    reporter.print_justified(encoders.robot_angle(), 5);
+    Serial.println();
+    motion.reset_drive_system();
+    sensors.set_steering_mode(STEERING_OFF);
   }
 
  private:

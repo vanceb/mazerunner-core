@@ -319,6 +319,25 @@ class Reporter {
     printer.println();
   }
 
+  /***
+   * Encoders
+   *
+   * Print the encoder counts
+   */
+  void encoders_header() {
+    printer.println(F("        FWD        |        ROT        "));
+    printer.println(F("   chng      dist  |    chng    angl   "));
+  } 
+
+  void print_encoders() {
+    print_justified(encoders.robot_fwd_change(), 6);
+    print_justified(encoders.robot_distance(), 6);
+    printer.print(F("|"));
+    print_justified(encoders.robot_rot_change(), 6);
+    print_justified(encoders.robot_angle(), 6);
+    printer.println();
+  }
+
   // void
 
   //***************************************************************************//

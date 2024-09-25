@@ -367,10 +367,10 @@ class CommandLineInterface {
         mouse.follow_to(maze.goal());
       } break;
       case 4:
-        mouse.test_SS90E();
+
         break;
       case 5:
-        // mouse.test_SS90F(); // not implemented
+
         break;
       case 6:
         mouse.conf_edge_detection();
@@ -380,6 +380,27 @@ class CommandLineInterface {
         break;
       case 8:
         mouse.conf_log_front_sensor();
+        break;
+      case 9:
+        // mouse.show_encoders();
+        mouse.show_encoders_once();
+        break;
+      case 10:
+        mouse.fwd_1m();
+        break;
+      case 11:
+        mouse.test_SS90E();
+        break;
+      case 12:
+        mouse.turn_IP90();
+        break;
+      case 13:
+        mouse.turn_IP180();
+        break;
+      case 14:
+        break;
+      case 15:
+        mouse.svb_test();
         break;
       default:
         // just to be safe...
@@ -419,18 +440,18 @@ class CommandLineInterface {
     Serial.println(F("       1 = Sensor Static Calibration"));
     Serial.println(F("       2 = Search to the goal and back"));
     Serial.println(F("       3 = Follow a wall to the goal"));
-    Serial.println(F("       4 = Test SS90E Turn"));
-    Serial.println(F("       5 = Test SS90F Turn"));
+    Serial.println(F("       4 = "));
+    Serial.println(F("       5 = "));
     Serial.println(F("       6 = Test Edge Detect Position"));
     Serial.println(F("       7 = Sensor Spin Calibration"));
-    Serial.println(F("       8 = "));
-    Serial.println(F("       9 = "));
-    Serial.println(F("      10 = "));
-    Serial.println(F("      11 = "));
-    Serial.println(F("      12 = "));
-    Serial.println(F("      13 = "));
+    Serial.println(F("       8 = Log Front sensor as we reverse away from wall"));
+    Serial.println(F("       9 = Show distance and turn values from encoders"));
+    Serial.println(F("      10 = Move forward 1000mm"));
+    Serial.println(F("      11 = Moving turn (SS90)"));
+    Serial.println(F("      12 = In-place turn (IP90)"));
+    Serial.println(F("      13 = In-place turn (IP180"));
     Serial.println(F("      14 = "));
-    Serial.println(F("      15 = "));
+    Serial.println(F("      15 = Vance"));
     Serial.println(F("SEARCH x y : search to location (x,y)"));
     Serial.println(F("HELP       : this text"));
   }
