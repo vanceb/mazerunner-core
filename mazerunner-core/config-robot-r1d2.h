@@ -15,11 +15,11 @@
 
 /*****************************************************************************
  *
- * ADAM is a specific implementation of UKMARSBOT CORE
+ * R1D2 is a specific implementation of UKMARSBOT CORE
  *
  * Gearmotors with 50:1 ratio gearboxes and encoder discs with 12 pulses per rotation.
  *
- * It uses a wall sensor basic board with three emitter-detector pairs.
+ * It uses a advanced wall sensor board with four emitter-detector pairs.
  * The sensors consist of L7113SF7C (25 deg beamwidth) emitters and
  *                        BPW96B    (40 deg beamwidth) detectors.
  *
@@ -27,9 +27,13 @@
 #define NAME "R1D2 CORE"
 
 //***** SENSOR CALIBRATION **************************************************//
-/**
-RAW side sensor values when robot is centred in a cell and no wall ahead
 
+#if EVENT == EVENT_HOME
+
+/* SIDE SENSOR CALIBRATION */
+// RAW side sensor values when robot is centred in a cell and no wall ahead
+
+/*
 ##                            ##
 ||                            ||
 ||                            ||
@@ -40,9 +44,16 @@ RAW side sensor values when robot is centred in a cell and no wall ahead
 ||         |       |          ||
 ||         |_______|          ||
 ##============================##
+*/
+const int LEFT_CALIBRATION = 259;
+const int RIGHT_CALIBRATION = 243;
 
-RAW values for the front sensor when the robot is backed up to a wall
+/* FRONT SENSOR CALIBRATION */
+// wall sensor thresholds and constants
+// RAW values for the front sensor when the robot is backed up to a wall
+// with another wall ahead
 
+/*
 ##=============================##
 
 
@@ -54,30 +65,28 @@ RAW values for the front sensor when the robot is backed up to a wall
            |_______|
 ##=============================##
 */
-
-#if EVENT == EVENT_HOME
-// wall sensor thresholds and constants
-// RAW values for the front sensor when the robot is backed up to a wall
-// with another wall ahead
-const int FRONT_LEFT_CALIBRATION = 97;
-const int FRONT_RIGHT_CALIBRATION = 48;
-// RAW values for the side sensors when the robot is centered in a cell
-// and there is no wall ahead
-const int LEFT_CALIBRATION = 87;
-const int RIGHT_CALIBRATION = 80;
+const int FRONT_LEFT_CALIBRATION = 164;
+const int FRONT_RIGHT_CALIBRATION = 164;
 
 // The front linear constant is the value of k needed to make the function
 // sensors.get_distance(sensor,k) return 68 when the mouse is backed up
 // against a wall with only a wall ahead
-const int FRONT_LINEAR_CONSTANT = 1030;
-const int FRONT_REFERENCE = 850;  // reading when mouse centered with wall ahead
+const int FRONT_LINEAR_CONSTANT = 950;
+const int FRONT_REFERENCE = 190;  // front sum reading when mouse centered with wall ahead
 
 // SS90E turn thresholds. This is the front sum reading to trigger a turn
 // it changes a bit if there is an adjacent wall. The threshold is set for
 // when the robot is 20mm past the cell boundary. That is, the distance
 // from the front of the mouse to the wall ahead is 92mm
-const int TURN_THRESHOLD_SS90E = 115;
+const int TURN_THRESHOLD_SS90E = 80;
 const int EXTRA_WALL_ADJUST = 5;
+
+/* Thresholds */
+// the values above which, a wall is seen
+const int LEFT_THRESHOLD = 50;   // minimum value to register a wall
+const int RIGHT_THRESHOLD = 50;  // minimum value to register a wall
+// const int FRONT_THRESHOLD = 20;  // minimum value to register a wall
+const int FRONT_THRESHOLD = 50;  // minimum value to register a wall
 
 #elif EVENT == EVENT_UK
 // RAW values for the front sensor when the robot is backed up to a wall
@@ -285,10 +294,10 @@ const float STEERING_ADJUST_LIMIT = 10.0;  // deg/s
 // const int FAST_RUN_SPEED_MAX = 250;
 
 // SVB Original speeds...
-const int SEARCH_SPEED = 400;
+const int SEARCH_SPEED = 200;
 const int SEARCH_ACCELERATION = 2000;
-const int SEARCH_TURN_SPEED = 300;
-const int SMOOTH_TURN_SPEED = 500;
+const int SEARCH_TURN_SPEED = 200;
+const int SMOOTH_TURN_SPEED = 200;
 const int FAST_TURN_SPEED = 600;
 const int FAST_RUN_SPEED_MAX = 2500;
 
@@ -314,12 +323,6 @@ const float FRONT_LEFT_SCALE = (float)FRONT_NOMINAL / FRONT_LEFT_CALIBRATION;
 const float FRONT_RIGHT_SCALE = (float)FRONT_NOMINAL / FRONT_RIGHT_CALIBRATION;
 const float LEFT_SCALE = (float)SIDE_NOMINAL / LEFT_CALIBRATION;
 const float RIGHT_SCALE = (float)SIDE_NOMINAL / RIGHT_CALIBRATION;
-
-// the values above which, a wall is seen
-const int LEFT_THRESHOLD = 25;   // minimum value to register a wall
-const int RIGHT_THRESHOLD = 25;  // minimum value to register a wall
-// const int FRONT_THRESHOLD = 20;  // minimum value to register a wall
-const int FRONT_THRESHOLD = 55;  // minimum value to register a wall
 
 // the distance through the cell at which the corresponding sensor
 // will see a falling edge

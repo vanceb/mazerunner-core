@@ -56,22 +56,44 @@ class Mouse {
     m_heading = NORTH;
   }
 
+  /* Walls Detected */
+
   /* Testbed function*/
   void svb_test(bool hand_start = false) {
-    // Reset the mouse
-    motion.reset_drive_system();
-    // Enable sensing
-    sensors.enable();
-    // We are in the start cell
+    delay(200);
     m_location = START;
     m_heading = NORTH;
+    sensors.enable();
+    motion.reset_drive_system();
+    sensors.set_steering_mode(STEERING_OFF);  // never steer from zero speed
+    motion.move(BACK_WALL_TO_CENTER, SEARCH_SPEED / 2, SEARCH_SPEED / 2, SEARCH_ACCELERATION / 2);
     motion.set_position(HALF_CELL);
-    // Wait to go
-    sensors.wait_for_user_start();
-    // Move to sensing position
-    motion.move(SENSING_POSITION, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
-    motion.turn(-90, SEARCH_TURN_SPEED, 0, SEARCH_ACCELERATION);
-    motion.stop();
+    motion.move(SENSING_POSITION, SEARCH_SPEED / 2, 0, SEARCH_ACCELERATION / 2);
+
+    /* Report sensor data */
+    reporter.wall_sensor_header();
+    reporter.print_wall_sensors();
+    printer.print(" [");
+    printer.print(sensors.see_left_wall ? "L" : "-");
+    printer.print(sensors.see_front_wall ? "F" : "-");
+    printer.print(sensors.see_right_wall ? "R" : "-");
+    printer.print("] ");
+    reporter.log_action_status('-', ' ', m_location, m_heading);
+    printer.println();
+
+    while (sensors.wait_for_user_start() == LEFT_START) {
+      motion.move(FULL_CELL, SEARCH_SPEED / 2, 0, SEARCH_ACCELERATION / 2);
+      reporter.print_wall_sensors();
+      printer.print(" [");
+      printer.print(sensors.see_left_wall ? "L" : "-");
+      printer.print(sensors.see_front_wall ? "F" : "-");
+      printer.print(sensors.see_right_wall ? "R" : "-");
+      printer.print("] ");
+      reporter.log_action_status('-', ' ', m_location, m_heading);
+      printer.println();
+      motion.set_position(-FULL_CELL);
+    }
+
     sensors.disable();
     motion.reset_drive_system();
   }

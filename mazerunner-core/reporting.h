@@ -327,7 +327,7 @@ class Reporter {
   void encoders_header() {
     printer.println(F("        FWD        |        ROT        "));
     printer.println(F("   chng      dist  |    chng    angl   "));
-  } 
+  }
 
   void print_encoders() {
     print_justified(encoders.robot_fwd_change(), 6);

@@ -145,9 +145,9 @@ class Motors {
     static float oldSpeed = 0;
     float leftFF = speed * SPEED_FF;
     if (speed > 0) {
-		  leftFF += BIAS_FF ;
-	  } else if (speed < 0){
-		  leftFF -= BIAS_FF ;
+      leftFF += BIAS_FF;
+    } else if (speed < 0) {
+      leftFF -= BIAS_FF;
     } else {
       // No bias when the speed is 0
     }
@@ -162,9 +162,9 @@ class Motors {
     static float oldSpeed = 0;
     float rightFF = speed * SPEED_FF;
     if (speed > 0) {
-		  rightFF += BIAS_FF ;
-	  } else if (speed < 0){
-		  rightFF -= BIAS_FF ;
+      rightFF += BIAS_FF;
+    } else if (speed < 0) {
+      rightFF -= BIAS_FF;
     } else {
       // No bias when the speed is 0
     }
