@@ -193,7 +193,7 @@ const float WHEEL_DIAMETER = 31.40;
 // Larger radius gives oversteer, Smaller radius gives understeer.
 
 // Smaller radius makes the mouse turn less
-const float MOUSE_RADIUS = 41.0;  // 39.50; // Adjust on test
+const float MOUSE_RADIUS = 41.80;  // 39.50; // Adjust on test
 
 // The robot is likely to have wheels of different diameters or motors of slightly
 // different characteristics and that must be compensated for if the robot is to
@@ -365,7 +365,7 @@ const TurnParameters turn_params[4] = {
 
 const float BATTERY_R1 = 15000.0;      // resistor to battery +
 const float BATTERY_R2 = 15000.0;      // resistor to Gnd
-const float BATTERY_DIODE_DROP = 0.9;  // Battery flows through a diode so forward voltage adds
+const float BATTERY_DIODE_DROP = 0.9;  // Voltage drop as battery flows through a diode (D1)
 const float BATTERY_DIVIDER_RATIO = BATTERY_R2 / (BATTERY_R1 + BATTERY_R2);
 const float ADC_FSR = 1023.0;     // The maximum reading for the ADC
 const float ADC_REF_VOLTS = 5.0;  // Reference voltage of ADC
