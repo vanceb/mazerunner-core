@@ -57,12 +57,12 @@ RAW values for the front sensor when the robot is backed up to a wall
 // wall sensor thresholds and constants
 // RAW values for the front sensor when the robot is backed up to a wall
 // with another wall ahead
-const int FRONT_LEFT_CALIBRATION = 97;
-const int FRONT_RIGHT_CALIBRATION = 48;
+const int FRONT_LEFT_CALIBRATION = 75;
+const int FRONT_RIGHT_CALIBRATION = 35;
 // RAW values for the side sensors when the robot is centered in a cell
 // and there is no wall ahead
-const int LEFT_CALIBRATION = 87;
-const int RIGHT_CALIBRATION = 80;
+const int LEFT_CALIBRATION = 75;
+const int RIGHT_CALIBRATION = 68;
 
 // The front linear constant is the value of k needed to make the function
 // sensors.get_distance(sensor,k) return 68 when the mouse is backed up
@@ -161,9 +161,9 @@ const int BACK_WALL_TO_CENTER = 48;
 // the pulses.
 // Finally, move the mouse in a straight line through 1000mm of travel to work
 // out the wheel diameter.
+const float WHEEL_DIAMETER = 31.03;
 const float ENCODER_PULSES = 12.00;
 const float GEAR_RATIO = 19.540;
-const float WHEEL_DIAMETER = 32.00;
 
 // Mouse radius is the distance between the contact patches of the drive wheels.
 // A good starting approximation is half the distance between the wheel centres.
@@ -195,7 +195,7 @@ const float LOOP_INTERVAL = (1.0 / LOOP_FREQUENCY);
 
 // Dynamic performance constants
 // There is a video describing how to get these numbers and calculate the feedforward
-// constnats here: https://youtu.be/BrabDeHGsa0
+// constants here: https://youtu.be/BrabDeHGsa0
 const float FWD_KM = 475.0;  // mm/s/Volt
 const float FWD_TM = 0.190;  // forward time constant
 const float ROT_KM = 775.0;  // deg/s/Volt
@@ -217,6 +217,15 @@ const float ROT_TM = 0.210;  // rotation time constant
  * some minimum voltage needed just to ovecome friction and get the wheels to turn at all.
  * That minimum voltage is the BIAS_FF. It is not dependent upon speed but is expressed
  * here as a fraction for comparison.
+ *
+ * If you want to find out more about how these equations come about and the theory
+ * behind the method and its derivation have a look at this video:
+ * https://youtu.be/qKoPRacXk9Q
+ *
+ * And this paper:
+ * https://github.com/ukmars/motorlab/blob/main/documents/dirty-pd-controller.pdf
+ *
+ *
  */
 const float MAX_MOTOR_VOLTS = 6.0;
 

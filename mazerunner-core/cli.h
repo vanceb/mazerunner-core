@@ -370,7 +370,7 @@ class CommandLineInterface {
 
         break;
       case 5:
-
+        mouse.wander_to(Location(20, 20));  // not implemented
         break;
       case 6:
         mouse.conf_edge_detection();
@@ -405,6 +405,12 @@ class CommandLineInterface {
       case 16:
         mouse.search_maze_two();
         break;
+
+      case 9:
+        mouse.run(4 * FULL_CELL);
+        ;
+        break;
+
       default:
         // just to be safe...
         sensors.disable();
@@ -443,12 +449,12 @@ class CommandLineInterface {
     Serial.println(F("       1 = Sensor Static Calibration"));
     Serial.println(F("       2 = Search to the goal and back"));
     Serial.println(F("       3 = Follow a wall to the goal"));
-    Serial.println(F("       4 = "));
-    Serial.println(F("       5 = "));
+    Serial.println(F("       4 = Test SS90E Turn"));
+    Serial.println(F("       5 = Wander"));
     Serial.println(F("       6 = Test Edge Detect Position"));
     Serial.println(F("       7 = Sensor Spin Calibration"));
-    Serial.println(F("       8 = Log Front sensor as we reverse away from wall"));
-    Serial.println(F("       9 = Show distance and turn values from encoders"));
+    Serial.println(F("       8 = Log Front sensor as we reverse away from wallGet Front Sensor table"));
+    Serial.println(F("       9 = Show distance and turn values from encodersmove forward 4 cells"));
     Serial.println(F("      10 = Move forward 1000mm"));
     Serial.println(F("      11 = Moving turn (SS90)"));
     Serial.println(F("      12 = In-place turn (IP90)"));
@@ -461,7 +467,7 @@ class CommandLineInterface {
   }
 
  private:
-  char m_buffer[INPUT_BUFFER_SIZE];
+  char m_buffer[INPUT_BUFFER_SIZE] = {0};
   uint8_t m_index = 0;
 };
 

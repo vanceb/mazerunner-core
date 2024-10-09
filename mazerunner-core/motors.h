@@ -142,7 +142,7 @@ class Motors {
    */
 
   float leftFeedForward(float speed) {
-    static float oldSpeed = 0;
+    static float oldSpeed = speed;
     float leftFF = speed * SPEED_FF;
     if (speed > 0) {
       leftFF += BIAS_FF;
@@ -159,7 +159,7 @@ class Motors {
   }
 
   float rightFeedForward(float speed) {
-    static float oldSpeed = 0;
+    static float oldSpeed = speed;
     float rightFF = speed * SPEED_FF;
     if (speed > 0) {
       rightFF += BIAS_FF;
@@ -337,17 +337,17 @@ class Motors {
   }
 
  private:
-  bool m_controller_output_enabled;
+  bool m_controller_output_enabled = true;
   bool m_feedforward_enabled = true;
-  float m_previous_fwd_error;
-  float m_previous_rot_error;
-  float m_fwd_error;
-  float m_rot_error;
-  float m_velocity;
-  float m_omega;
+  float m_previous_fwd_error = 0;
+  float m_previous_rot_error = 0;
+  float m_fwd_error = 0;
+  float m_rot_error = 0;
+  float m_velocity = 0;
+  float m_omega = 0;
   // these are maintained only for logging
-  float m_left_motor_volts;
-  float m_right_motor_volts;
+  float m_left_motor_volts = 0;
+  float m_right_motor_volts = 0;
 };
 
 #endif
