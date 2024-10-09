@@ -402,6 +402,9 @@ class CommandLineInterface {
       case 15:
         mouse.svb_test();
         break;
+      case 16:
+        mouse.search_maze_two();
+        break;
       default:
         // just to be safe...
         sensors.disable();
@@ -452,6 +455,7 @@ class CommandLineInterface {
     Serial.println(F("      13 = In-place turn (IP180"));
     Serial.println(F("      14 = "));
     Serial.println(F("      15 = Vance"));
+    Serial.println(F("      16 = Search Maxe using IP turns"));
     Serial.println(F("SEARCH x y : search to location (x,y)"));
     Serial.println(F("HELP       : this text"));
   }

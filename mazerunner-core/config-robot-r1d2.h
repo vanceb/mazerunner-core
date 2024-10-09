@@ -45,8 +45,8 @@
 ||         |_______|          ||
 ##============================##
 */
-const int LEFT_CALIBRATION = 259;
-const int RIGHT_CALIBRATION = 243;
+const int LEFT_CALIBRATION = 653;
+const int RIGHT_CALIBRATION = 619;
 
 /* FRONT SENSOR CALIBRATION */
 // wall sensor thresholds and constants
@@ -65,28 +65,27 @@ const int RIGHT_CALIBRATION = 243;
            |_______|
 ##=============================##
 */
-const int FRONT_LEFT_CALIBRATION = 164;
-const int FRONT_RIGHT_CALIBRATION = 164;
+const int FRONT_LEFT_CALIBRATION = 468;
+const int FRONT_RIGHT_CALIBRATION = 402;
+const int FRONT_REFERENCE = 191;  // front sum reading when mouse centered with wall ahead
 
 // The front linear constant is the value of k needed to make the function
 // sensors.get_distance(sensor,k) return 68 when the mouse is backed up
 // against a wall with only a wall ahead
 const int FRONT_LINEAR_CONSTANT = 950;
-const int FRONT_REFERENCE = 190;  // front sum reading when mouse centered with wall ahead
 
 // SS90E turn thresholds. This is the front sum reading to trigger a turn
 // it changes a bit if there is an adjacent wall. The threshold is set for
 // when the robot is 20mm past the cell boundary. That is, the distance
 // from the front of the mouse to the wall ahead is 92mm
-const int TURN_THRESHOLD_SS90E = 80;
+const int TURN_THRESHOLD_SS90E = 100;
 const int EXTRA_WALL_ADJUST = 5;
 
 /* Thresholds */
 // the values above which, a wall is seen
-const int LEFT_THRESHOLD = 50;   // minimum value to register a wall
-const int RIGHT_THRESHOLD = 50;  // minimum value to register a wall
-// const int FRONT_THRESHOLD = 20;  // minimum value to register a wall
-const int FRONT_THRESHOLD = 50;  // minimum value to register a wall
+const int LEFT_THRESHOLD = 20;   // minimum value to register a wall
+const int RIGHT_THRESHOLD = 20;  // minimum value to register a wall
+const int FRONT_THRESHOLD = 20;  // minimum value to register a wall
 
 #elif EVENT == EVENT_UK
 // RAW values for the front sensor when the robot is backed up to a wall
@@ -194,7 +193,7 @@ const float WHEEL_DIAMETER = 31.40;
 // Larger radius gives oversteer, Smaller radius gives understeer.
 
 // Smaller radius makes the mouse turn less
-const float MOUSE_RADIUS = 42.30;  // 39.50; // Adjust on test
+const float MOUSE_RADIUS = 41.0;  // 39.50; // Adjust on test
 
 // The robot is likely to have wheels of different diameters or motors of slightly
 // different characteristics and that must be compensated for if the robot is to
@@ -303,8 +302,8 @@ const int FAST_RUN_SPEED_MAX = 2500;
 
 const float FAST_RUN_ACCELERATION = 3000;
 
-const int OMEGA_SPIN_TURN = 360;
-const int ALPHA_SPIN_TURN = 3600;
+const int OMEGA_SPIN_TURN = 180;
+const int ALPHA_SPIN_TURN = 1800;
 
 //***** SENSOR SCALING ******************************************************//
 // This is the normalised value seen by the front sensor when the mouse is
@@ -316,7 +315,7 @@ const int FRONT_NOMINAL = 100;
 // is the limit for the front sensor reading, above which the side sensors
 // are likely to give innaccurate readings because of reflections from
 // the wall ahead
-const int FRONT_WALL_RELIABILITY_LIMIT = 100;
+const int FRONT_WALL_RELIABILITY_LIMIT = 200;
 
 // Sensor brightness adjustment factor. The compiler calculates these so it saves processor time
 const float FRONT_LEFT_SCALE = (float)FRONT_NOMINAL / FRONT_LEFT_CALIBRATION;

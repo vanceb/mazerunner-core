@@ -177,11 +177,13 @@ class Mouse {
 
   void turn_IP90() {
     uint8_t side = sensors.wait_for_user_start();
+    motion.reset_drive_system();
     if (side == LEFT_START) {
       turn_IP90L();
     } else {
       turn_IP90R();
     }
+    motion.reset_drive_system();
   }
 
   void turn_IP90R() {
@@ -274,20 +276,35 @@ class Mouse {
    * Then it just waits until it gets to the next sensing position.
    */
   void move_ahead() {
-    motion.adjust_forward_position(-FULL_CELL);
-    motion.wait_until_position(SENSING_POSITION);
+    // Move to the next sensing position
+    motion.move(FULL_CELL, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    motion.set_position(SENSING_POSITION);
   }
 
   //***************************************************************************//
   void turn_left() {
-    turn_smooth(SS90EL);
+    reporter.log_action_status('L', ' ', m_location, m_heading);
+    // Move to cell centre
+    motion.move(HALF_CELL + (FULL_CELL - SENSING_POSITION), SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    // Turn
+    turn_IP90L();
+    // Set the new heading
     m_heading = left_from(m_heading);
+    motion.move(HALF_CELL - (FULL_CELL - SENSING_POSITION), SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    motion.set_position(SENSING_POSITION);
   }
 
   //***************************************************************************//
   void turn_right() {
-    turn_smooth(SS90ER);
+    reporter.log_action_status('R', ' ', m_location, m_heading);
+    // Move to cell centre
+    motion.move(HALF_CELL + (FULL_CELL - SENSING_POSITION), SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    // Turn
+    turn_IP90R();
+    // Set the new heading
     m_heading = right_from(m_heading);
+    motion.move(HALF_CELL - (FULL_CELL - SENSING_POSITION), SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    motion.set_position(SENSING_POSITION);
   }
 
   //***************************************************************************//
@@ -303,10 +320,9 @@ class Mouse {
    */
   void turn_back() {
     reporter.log_action_status('B', ' ', m_location, m_heading);
-    stop_at_center();
     turn_IP180();
-    float distance = SENSING_POSITION - HALF_CELL;
-    motion.move(distance, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    float distance = HALF_CELL - (FULL_CELL - SENSING_POSITION);
+    motion.move(distance, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
     motion.set_position(SENSING_POSITION);
     m_heading = behind_from(m_heading);
   }
@@ -473,6 +489,76 @@ class Mouse {
     sensors.set_steering_mode(STEERING_OFF);
   }
 
+  void search_to_two(Location target) {
+    maze.flood(target);
+    delay(200);
+    sensors.enable();
+    motion.reset_drive_system();
+    sensors.set_steering_mode(STEERING_OFF);  // never steer from zero speed
+    if (not m_handStart) {
+      // back up to the wall behind
+      // TODO: what if there is not a wall?
+      // perhaps the caller should decide so this ALWAYS starts at the cell centre?
+      motion.move(-BACK_WALL_TO_CENTER, SEARCH_SPEED / 4, 0, SEARCH_ACCELERATION / 2);
+      motion.move(BACK_WALL_TO_CENTER, SEARCH_SPEED / 4, 0, SEARCH_ACCELERATION / 2);
+    }
+
+    motion.set_position(HALF_CELL);
+    motion.move(SENSING_POSITION - HALF_CELL, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    Serial.print(F("Off we go..."));
+    printer.print('[');
+    printer.print(target.x);
+    printer.print(',');
+    printer.print(target.y);
+    printer.print(']');
+    Serial.println();
+
+    // Each iteration of this loop starts at the sensing point
+    while (m_location != target) {
+      if (switches.button_pressed()) {  // allow user to abort gracefully
+        break;
+      }
+
+      Serial.println();
+      reporter.log_action_status('-', ' ', m_location, m_heading);
+      delay(1000);  // SVB - Lets see what's happening
+      sensors.set_steering_mode(STEERING_OFF);
+      m_location = m_location.neighbour(m_heading);  // the cell we are about to enter
+      update_map();
+      maze.flood(target);
+      unsigned char newHeading = maze.heading_to_smallest(m_location, m_heading);
+      unsigned char hdgChange = (newHeading - m_heading) & 0x3;
+      if (m_location != target) {
+        switch (hdgChange) {
+          // each of the following actions will finish with the
+          // robot moving and at the sensing point ready for the
+          // next loop iteration
+          case AHEAD:
+            move_ahead();
+            break;
+          case RIGHT:
+            turn_right();
+            break;
+          case BACK:
+            turn_back();
+            break;
+          case LEFT:
+            turn_left();
+            break;
+        }
+      }
+    }
+    // we are entering the target cell so come to an orderly
+    // halt in the middle of that cell
+    stop_at_center();
+    sensors.disable();
+    Serial.println();
+    Serial.println(F("Arrived!  "));
+    delay(250);
+    motion.reset_drive_system();
+    sensors.set_steering_mode(STEERING_OFF);
+  }
+
   /***
    * run_to should take the mouse to the target cell by whatever
    * fast means it has. There is no mapping done, just the motion.
@@ -587,6 +673,24 @@ class Mouse {
     m_location = START;
     m_heading = NORTH;
     search_to(maze.goal());
+    maze.flood(START);
+
+    Heading best_direction = maze.heading_to_smallest(m_location, m_heading);
+    turn_to_face(best_direction);
+    m_handStart = false;
+    search_to(START);
+    turn_to_face(NORTH);
+    motion.stop();
+    motion.disable_drive();
+    return 0;
+  }
+  int search_maze_two() {
+    sensors.wait_for_user_start();
+    Serial.println(F("Search TO"));
+    m_handStart = true;
+    m_location = START;
+    m_heading = NORTH;
+    search_to_two(maze.goal());
     maze.flood(START);
 
     Heading best_direction = maze.heading_to_smallest(m_location, m_heading);

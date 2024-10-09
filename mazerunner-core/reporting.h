@@ -396,7 +396,9 @@ class Reporter {
     } else {
       printer.print('!');
     }
+    print_justified(sensors.lss.value, 4);
     print_justified(sensors.get_front_sum(), 4);
+    print_justified(sensors.rss.value, 4);
     printer.print('@');
     print_justified((int)motion.position(), 4);
     printer.print(' ');
