@@ -550,7 +550,9 @@ class Mouse {
     }
     // we are entering the target cell so come to an orderly
     // halt in the middle of that cell
-    stop_at_center();
+    motion.move(HALF_CELL - (FULL_CELL - SENSING_POSITION), SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    mouse.turn_IP180();
+    reporter.log_action_status('-', ' ', m_location, m_heading);
     sensors.disable();
     Serial.println();
     Serial.println(F("Arrived!  "));
@@ -691,6 +693,8 @@ class Mouse {
     m_location = START;
     m_heading = NORTH;
     search_to_two(maze.goal());
+
+    /*
     maze.flood(START);
 
     Heading best_direction = maze.heading_to_smallest(m_location, m_heading);
@@ -698,6 +702,7 @@ class Mouse {
     m_handStart = false;
     search_to(START);
     turn_to_face(NORTH);
+    */
     motion.stop();
     motion.disable_drive();
     return 0;
