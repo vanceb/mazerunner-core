@@ -45,8 +45,8 @@
 ||         |_______|          ||
 ##============================##
 */
-const int LEFT_CALIBRATION = 653;
-const int RIGHT_CALIBRATION = 619;
+const int LEFT_CALIBRATION = 101;
+const int RIGHT_CALIBRATION = 105;
 
 /* FRONT SENSOR CALIBRATION */
 // wall sensor thresholds and constants
@@ -65,14 +65,14 @@ const int RIGHT_CALIBRATION = 619;
            |_______|
 ##=============================##
 */
-const int FRONT_LEFT_CALIBRATION = 468;
-const int FRONT_RIGHT_CALIBRATION = 402;
-const int FRONT_REFERENCE = 191;  // front sum reading when mouse centered with wall ahead
+const int FRONT_LEFT_CALIBRATION = 107;
+const int FRONT_RIGHT_CALIBRATION = 155;
+const int FRONT_REFERENCE = 630;  // front sum reading when mouse centered with wall ahead
 
 // The front linear constant is the value of k needed to make the function
 // sensors.get_distance(sensor,k) return 68 when the mouse is backed up
 // against a wall with only a wall ahead
-const int FRONT_LINEAR_CONSTANT = 950;
+const int FRONT_LINEAR_CONSTANT = 920;
 
 // SS90E turn thresholds. This is the front sum reading to trigger a turn
 // it changes a bit if there is an adjacent wall. The threshold is set for
@@ -83,9 +83,9 @@ const int EXTRA_WALL_ADJUST = 5;
 
 /* Thresholds */
 // the values above which, a wall is seen
-const int LEFT_THRESHOLD = 20;   // minimum value to register a wall
-const int RIGHT_THRESHOLD = 20;  // minimum value to register a wall
-const int FRONT_THRESHOLD = 20;  // minimum value to register a wall
+const int LEFT_THRESHOLD = 25;   // minimum value to register a wall
+const int RIGHT_THRESHOLD = 25;  // minimum value to register a wall
+const int FRONT_THRESHOLD = 25;  // minimum value to register a wall
 
 #elif EVENT == EVENT_UK
 // RAW values for the front sensor when the robot is backed up to a wall
@@ -107,6 +107,11 @@ const int FRONT_REFERENCE = 500;  // reading when mouse centered with wall ahead
 const int TURN_THRESHOLD_SS90E = 200;
 const int EXTRA_WALL_ADJUST = 6;
 
+/* Thresholds */
+// the values above which, a wall is seen
+const int LEFT_THRESHOLD = 50;   // minimum value to register a wall
+const int RIGHT_THRESHOLD = 50;  // minimum value to register a wall
+const int FRONT_THRESHOLD = 50;  // minimum value to register a wall
 #endif
 
 //***** IO PINS *****************************************************//
@@ -170,7 +175,7 @@ const int REPORTING_INTERVAL = 10;
 // Some physical constants that are likely to be robot-specific
 // with robot against back wall, how much travel is there to the cell center?
 // const int BACK_WALL_TO_CENTER = 48;
-const int BACK_WALL_TO_CENTER = 65;  // How far to drive from back wall to axles centred in cell
+const int BACK_WALL_TO_CENTER = 50;  // How far to drive from back wall to axles centred in cell
 //***************************************************************************//
 // We need to know about the drive mechanics.
 // The encoder pulse counts should be obvious from the encoder itself.
@@ -267,9 +272,9 @@ const float ROT_KP = 16 * ROT_TM / (ROT_KM * ROT_ZETA * ROT_ZETA * ROT_TD * ROT_
 const float ROT_KD = LOOP_FREQUENCY * (8 * ROT_TM - ROT_TD) / (ROT_KM * ROT_TD);
 
 // controller constants for the steering controller
-const float STEERING_KP = 0.25;
+const float STEERING_KP = 0.0025;
 const float STEERING_KD = 0.00;
-const float STEERING_ADJUST_LIMIT = 10.0;  // deg/s
+const float STEERING_ADJUST_LIMIT = 1.0;  // deg/s
 
 // encoder polarity is either 1 or -1 and is used to account for reversal of the encoder phases
 #define ENCODER_LEFT_POLARITY (1)

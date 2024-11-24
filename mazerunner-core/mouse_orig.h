@@ -257,19 +257,14 @@ class Mouse {
   void stop_at_center() {
     bool has_wall = sensors.see_front_wall;
     sensors.set_steering_mode(STEERING_OFF);
-    //    float remaining = (FULL_CELL + HALF_CELL) - motion.position();
     float remaining = (FULL_CELL + HALF_CELL) - motion.position();
     // finish at very low speed so we can adjust from the wall ahead if present
     motion.start_move(remaining, motion.velocity(), 30, motion.acceleration());
     if (has_wall) {
-      Serial.print("Wall ahead: ");
       while (sensors.get_front_sum() < FRONT_REFERENCE) {
-        Serial.print(sensors.get_front_sum());
-        Serial.print(" ");
         delay(2);
       }
     } else {
-      Serial.print("Stopping at centre... ");
       while (not motion.move_finished()) {
         delay(2);
       };

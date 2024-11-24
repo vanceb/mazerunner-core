@@ -403,14 +403,8 @@ class CommandLineInterface {
         mouse.svb_test();
         break;
       case 16:
-        mouse.search_maze_two();
+        mouse.step_by_step(maze.goal());
         break;
-
-      case 9:
-        mouse.run(4 * FULL_CELL);
-        ;
-        break;
-
       default:
         // just to be safe...
         sensors.disable();
