@@ -367,25 +367,28 @@ class Mouse {
         break;
       }
       Serial.println();
-      reporter.log_action_status('-', ' ', m_location, m_heading);
+      reporter.log_action_status('#', ' ', m_location, m_heading);
       sensors.set_steering_mode(STEER_NORMAL);
       m_location = m_location.neighbour(m_heading);
       update_map();
-      Serial.write(' ');
-      Serial.write('|');
-      Serial.write(' ');
+      // Serial.write(' ');
+      // Serial.write('|');
+      // Serial.write(' ');
       char action = '#';
       if (m_location != target) {
         if (!sensors.see_left_wall) {
+          // Serial.println();
           turn_left();
           action = 'L';
         } else if (!sensors.see_front_wall) {
           move_ahead();
           action = 'F';
         } else if (!sensors.see_right_wall) {
+          // Serial.println();
           turn_right();
           action = 'R';
         } else {
+          // Serial.println();
           turn_back();
           action = 'B';
         }
@@ -435,6 +438,7 @@ class Mouse {
     sensors.disable();
     motion.reset_drive_system();
     sensors.set_steering_mode(STEERING_OFF);
+    motion.disable_drive();
   }
 
   /****************************************************************************/
@@ -486,11 +490,11 @@ class Mouse {
     motion.move(BACK_WALL_TO_CENTER, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
     motion.set_position(HALF_CELL);
     Serial.print(F("Off we go..."));
-    printer.print('[');
-    printer.print(target.x);
-    printer.print(',');
-    printer.print(target.y);
-    printer.print(']');
+    Serial.print('[');
+    Serial.print(target.x);
+    Serial.print(',');
+    Serial.print(target.y);
+    Serial.print(']');
     Serial.println();
 
     motion.wait_until_position(SENSING_POSITION);
@@ -703,6 +707,8 @@ class Mouse {
       turnDirection = AHEAD;
     } else if (rightWall && frontWall) {
       turnDirection = LEFT;
+    } else if (leftWall && frontWall) {
+      turnDirection = RIGHT;
     } else if (leftWall) {
       if (getRandomBool()) {
         turnDirection = RIGHT;
@@ -748,29 +754,23 @@ class Mouse {
         break;
       }
       Serial.println();
-      reporter.log_action_status('-', ' ', m_location, m_heading);
+      reporter.log_action_status('#', ' ', m_location, m_heading);
       sensors.set_steering_mode(STEER_NORMAL);
       m_location = m_location.neighbour(m_heading);
       update_map();
       Serial.write(' ');
       Serial.write('|');
       Serial.write(' ');
-      char action = 'W';
       uint8_t hdg = randomHeading();
       if (hdg == LEFT) {
         turn_left();
-        action = 'L';
       } else if (hdg == AHEAD) {
         move_ahead();
-        action = 'F';
       } else if (hdg == RIGHT) {
         turn_right();
-        action = 'R';
       } else {
         turn_back();
-        action = 'B';
       }
-      reporter.log_action_status(action, ' ', m_location, m_heading);
     }
     // we are entering the target cell so come to an orderly
     // halt in the middle of that cell

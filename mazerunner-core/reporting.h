@@ -249,6 +249,15 @@ class Reporter {
     }
   }
 
+  void report_encoders() {
+    print_justified(int(encoders.robot_distance()), 6);
+    print_justified(int(encoders.robot_angle()), 6);
+    printer.print(F(" | "));
+    print_justified(encoders.m_total_left, 6);
+    print_justified(encoders.m_total_right, 6);
+    printer.println();
+  }
+
   //***************************************************************************//
 
   /***
@@ -382,15 +391,13 @@ class Reporter {
   /// @private  don't  show this in doxygen output
   //
   void log_action_status(char action, char note, Location location, Heading heading) {
-    printer.print('{');
     printer.print(action);
     printer.print(note);
     printer.print('[');
-    printer.print(location.x);
+    print_justified(location.x, 2);
     printer.print(',');
-    printer.print(location.y);
-    printer.print(']');
-    printer.print(' ');
+    print_justified(location.y, 2);
+    printer.print(',');
     if (heading < HEADING_COUNT) {
       printer.print(hdg_letters[heading]);
     } else {
@@ -401,9 +408,6 @@ class Reporter {
     print_justified(sensors.rss.value, 4);
     printer.print('@');
     print_justified((int)motion.position(), 4);
-    printer.print(' ');
-    // print_walls();
-    printer.print('}');
     printer.print(' ');
   }
 

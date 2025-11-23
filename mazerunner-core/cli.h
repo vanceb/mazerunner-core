@@ -23,13 +23,20 @@
 const int MAX_ARGC = 16;
 #define MAX_DIGITS 8
 
+/// These are the long commands that we can use.
+/// The constraints of the ATMega architecture make this all a bit sketchy
+const char cmdHelp[] PROGMEM = "HELP";
+const char cmdSEARCH[] PROGMEM = "SEARCH";
+const char *const commands[] PROGMEM = {cmdHelp, cmdSEARCH};
+const int CMD_COUNT = sizeof(commands) / sizeof(char *);
+
 /***
  * The Args class is little more than an array of pointers to strings and a counter.
- * Input lines can be parsed into tokens and each token ha its location stored in
+ * Input lines can be parsed into tokens and each token has its location stored in
  * the array.
  *
  * During command line processing, a temporary instance of Args will be created
- * on the stack and a reference to that passed around to any methds that may
+ * on the stack and a reference to that passed around to any omethds that may
  * need to see the contents. Control eventually returns to the function that
  * created the instance and when that terminates, the information is lost. This
  * means that memory is only used when needed but bear in mind that the instance
@@ -98,44 +105,71 @@ inline uint8_t read_integer(const char *line, int &value) {
  * RETURNS  the number of digits found an converted
  *
  * optimisations are possible but may not be worth the effort
+ *
+ * exponents are not handled
+ *
+ * Example usage:
+ *
+ * const char *input = "   -123.45 more";
+ * float v;
+ * const char *next;
+ * uint8_t count = read_float(input, v, next);
+ * // v == -123.45
+ * // next points to " more"
+ *
+ *
+ *
  */
-uint8_t read_float(const char *line, float &value) {
-  char *ptr = (char *)line;
-  char c = *ptr++;
+uint8_t read_float(const char *line, float &value, const char *&endptr) {
+  const char *ptr = line;
+  char c = *ptr;
   uint8_t digits = 0;
+
+  // Skip leading whitespace
+  while (c == ' ' || c == '\t') {
+    c = *++ptr;
+  }
 
   bool is_minus = false;
   if (c == '-') {
     is_minus = true;
-    c = *ptr++;
+    c = *++ptr;
   }
 
-  uint32_t a = 0.0;
+  float a = 0.0f;
   int exponent = 0;
-  while (c >= '0' and c <= '9') {
+
+  // Parse integer part
+  while (c >= '0' && c <= '9') {
     if (digits++ < MAX_DIGITS) {
-      a = a * 10 + (c - '0');
+      a = a * 10.0f + (c - '0');
     }
-    c = *ptr++;
-  };
+    c = *++ptr;
+  }
+
+  // Parse fractional part
   if (c == '.') {
-    c = *ptr++;
-    while (c >= '0' and c <= '9') {
+    c = *++ptr;
+    while (c >= '0' && c <= '9') {
       if (digits++ < MAX_DIGITS) {
-        a = a * 10 + (c - '0');
-        exponent = exponent - 1;
+        a = a * 10.0f + (c - '0');
+        exponent--;
       }
-      c = *ptr++;
+      c = *++ptr;
     }
   }
+
   float b = a;
   while (exponent < 0) {
-    b *= 0.1;
+    b *= 0.1f;
     exponent++;
   }
+
   if (digits > 0) {
     value = is_minus ? -b : b;
   }
+
+  endptr = ptr;  // Return updated pointer
   return digits;
 }
 
@@ -156,7 +190,7 @@ class CommandLineInterface {
    * Lines are terminated with a LINEFEED character which is
    * echoed but not placed in the buffer.
    *
-   * All printiable characters are placed in a buffer with a
+   * All printable characters are placed in a buffer with a
    * maximum length of just 32 characters. You could make this
    * longer but there should be little practical need.
    *
@@ -164,32 +198,69 @@ class CommandLineInterface {
    *
    */
   const char BACKSPACE = 0x08;
-  bool read_serial() {
+  bool process_serial_data() {
     while (Serial.available()) {
       char c = Serial.read();
-      if (c == '\r') {
+      c = toupper(c);
+      if (c == '\n') {
         Serial.println();
+        Args args;
+        if (tokenise(args, m_buffer) > 0) {
+          execute_command(args);
+        }
+        clear_input_buffer();
+        prompt();
         return true;
       } else if (c == BACKSPACE) {
-        if (m_index > 0) {
-          m_buffer[m_index] = 0;
-          m_index--;
-          Serial.print(c);  // backspace only moves the cursor
-          Serial.print(' ');
-          Serial.print(c);
-        }
+        handle_backspace();
       } else if (isPrintable(c)) {
-        c = toupper(c);
-        Serial.print(c);
-        if (m_index < INPUT_BUFFER_SIZE - 1) {
-          m_buffer[m_index++] = c;
-          m_buffer[m_index] = 0;
-        }
-      } else {
-        // drop the character silently
+        add_to_buffer(c);
       }
     }
     return false;
+  }
+
+  void handle_backspace() {
+    if (m_index > 0) {
+      m_index--;
+      m_buffer[m_index] = 0;
+      Serial.print("\b \b");  // Erases the character on the screen
+    }
+  }
+
+  void add_to_buffer(char c) {
+    if (m_index < INPUT_BUFFER_SIZE - 1) {
+      Serial.print(c);
+      m_buffer[m_index++] = c;
+      m_buffer[m_index] = 0;
+    }
+  }
+
+  /***
+   * Tokenising is a process where the input buffer is examined
+   * for separators that divide one string from another. Here
+   * the separator is a space character, a comma or an '=' sign.
+   * consecutive separators are treated as one.
+   *
+   * The start of each separate string is recorded in an array
+   * in the Args structure and a null character is placed at its
+   * end. In this way, the original string gets to look like a
+   * sequence of shorter strings - the tokens. The argv array
+   * is a list of where each starts and you can think if it as
+   * an array of strings. The argc element keeps count of how
+   * many tokens were found.
+   *   *
+   */
+  int tokenise(Args &args, char *line) {
+    char *token;
+    args.argc = 0;  // just to be safe
+    for (token = strtok(line, " ,="); token != NULL; token = strtok(NULL, " ,=")) {
+      args.argv[args.argc] = token;
+      args.argc++;
+      if (args.argc >= MAX_ARGC)
+        break;
+    }
+    return args.argc;
   }
 
   /***
@@ -216,57 +287,26 @@ class CommandLineInterface {
    *      is used.
    *
    */
-  void interpret_line() {
+  void process_input_line() {
     Args args;
-    if (get_tokens(args) > 0) {
-      if (strlen(args.argv[0]) == 1) {
-        run_short_cmd(args);
-      } else {
-        run_long_cmd(args);
-      }
+    if (tokenise(args, m_buffer) > 0) {
+      execute_command(args);
     }
-    clear_input();
+    clear_input_buffer();
     prompt();
   }
 
-  /***
-   * Tokenising is a process where the input buffer is examined
-   * for separators that divide one string from another. Here
-   * the separator is a space character, a comma or an '=' sign.
-   * consecutive separators are treated as one.
-   *
-   * The start of each separate string is recorded in an array
-   * in the Args structure and a null character is placed at its
-   * end. In this way, the original string gets to look like a
-   * sequence of shorter strings - the tokens. The argv array
-   * is a list of where each starts and you can think if it as
-   * aan array of strings. The argc element keeps count of how
-   * many tokens were found.
-   *
-   * TODO: this creates an Args instance on the stack then
-   * copies it back to the caller which seems wasteful as the stack
-   * will grow by two times the size of Args. There should be a
-   * better way. Perhaps the caller could create the instance and
-   * pass a reference to it.
-   *
-   *
-   */
-  int get_tokens(Args &args) {
-    char *line = m_buffer;
-    char *token;
-    args.argc = 0;  // just to be safe
-    for (token = strtok(line, " ,="); token != NULL; token = strtok(NULL, " ,=")) {
-      args.argv[args.argc] = token;
-      args.argc++;
-      if (args.argc >= MAX_ARGC)
-        break;
+  void execute_command(Args &args) {
+    if (strlen(args.argv[0]) == 1) {
+      run_short_cmd(args);
+    } else {
+      run_long_cmd(args);
     }
-    return args.argc;
   }
 
   /***
    * Run a complex command. These all start with a string with more than
-   * one character in ti and have optional arguments.
+   * one character in it and have optional arguments.
    *
    * The arguments will be passed on to the robot.
    *
@@ -275,21 +315,48 @@ class CommandLineInterface {
    *  - pass integer arguments 500,1000,3000
    *
    */
-  void run_long_cmd(const Args args) {
-    if (strcmp("HELP", args.argv[0]) == 0) {
-      help();
-    } else if (strcmp("SEARCH", args.argv[0]) == 0) {
-      int x = 0;
-      int y = 0;
-      if (!read_integer(args.argv[1], x)) {
-        x = 7;
-      };
-
-      if (!read_integer(args.argv[2], y)) {
-        y = 7;
-      };
-      mouse.search_to(Location(x, y));
+  int get_command_index(const Args &args) {
+    char buffer[16];
+    for (int i = 0; i < CMD_COUNT; i++) {
+      strncpy_P(buffer, (char *)pgm_read_word(&(commands[i])), sizeof(buffer) - 1);
+      if (strcmp(buffer, args.argv[0]) == 0) {
+        return i;
+      }
     }
+    return -1;
+  }
+
+  void run_long_cmd(const Args &args) {
+    int index = get_command_index(args);
+    if (index < 0) {
+      Serial.print(F("UNKNOWN COMMAND: "));
+      args.print();
+      return;
+    }
+    switch (index) {
+      case 0:
+        help();
+        break;
+      case 1: {
+        handle_search_command(args);
+      } break;
+    }
+  }
+
+  void handle_search_command(const Args &args) {
+    int x = 0;
+    int y = 0;
+    if (!read_integer(args.argv[1], x)) {
+      x = 7;
+    };
+
+    if (!read_integer(args.argv[2], y)) {
+      y = 7;
+    };
+    char buf[20];
+    sprintf_P(buf, PSTR("Search to %d,%d\n"), x, y);
+    Serial.print(buf);
+    // mouse.search_to(Location(x, y));
   }
 
   /***
@@ -326,6 +393,10 @@ class CommandLineInterface {
         reporter.print_wall_sensors();
         sensors.disable();
         break;
+      case 'E':
+        delay(10);
+        reporter.report_encoders();
+        break;
       case 'F': {
         // simulate the function switches
         int function = -1;
@@ -333,12 +404,32 @@ class CommandLineInterface {
         if (digits) {
           run_function(function);
         }
-      }
+      } break;
+      case 'Q':
+        handle_calibrate_encoders_command(args);
+        break;
       default:
         break;
     }
   }
 
+  void handle_calibrate_encoders_command(const Args &args) {
+    motors.disable_controllers();
+    encoders.reset();
+    while (!switches.button_pressed()) {
+      delay(10);
+      float position = encoders.robot_distance();
+      float angle = encoders.robot_angle();
+      // reporter.print_justified(encoders.m_total_right, 7);
+      // reporter.print_justified(encoders.m_total_left, 7);
+      // reporter.print_justified(position, 7);
+      // reporter.print_justified(angle, 7);
+      // Serial.println();
+      char buf[60];
+      sprintf_P(buf, PSTR("L:%4d R:%4d P:%5.2f A:%5.2f\r\n"), encoders.m_total_left, encoders.m_total_right, position, angle);
+      Serial.print(buf);
+    }
+  }
   /**
    * These are the actions associated with the function switches on UKMARSBOT
    *
@@ -414,7 +505,7 @@ class CommandLineInterface {
     }
   }
 
-  void clear_input() {
+  void clear_input_buffer() {
     m_index = 0;
     m_buffer[m_index] = 0;
   }
@@ -438,6 +529,7 @@ class CommandLineInterface {
     Serial.println(F("D   : display maze with directions"));
     Serial.println(F("B   : show battery voltage"));
     Serial.println(F("S   : show sensor readings"));
+    Serial.println(F("Q   : show encoder readings"));
     Serial.println(F("F n : Run user function n"));
     Serial.println(F("       0 = ---"));
     Serial.println(F("       1 = Sensor Static Calibration"));

@@ -68,6 +68,7 @@ void setup() {
   digitalWrite(LED_BUILTIN, 0);
   adc.begin();
   motors.begin();
+  motors.disable_controllers();
   encoders.begin();
   /// do not begin systick until the hardware is setup
   systick.begin();
@@ -98,7 +99,6 @@ void loop() {
     switches.wait_for_button_release();
     int function = switches.read();
     cli.run_function(function);
-  } else if (cli.read_serial()) {
-    cli.interpret_line();
   }
+  cli.process_serial_data();
 }

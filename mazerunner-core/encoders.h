@@ -64,6 +64,8 @@ class Encoders {
       m_right_counter = 0;
       m_robot_distance = 0;
       m_robot_angle = 0;
+      m_total_right = 0;
+      m_total_left = 0;
     }
   }
 
@@ -83,8 +85,8 @@ class Encoders {
    * quadrature input.
    */
   void left_input_change() {
-    static bool oldA = false;
-    static bool oldB = false;
+    static volatile bool oldA = false;
+    static volatile bool oldB = false;
     // bool newB = digitalReadFast(ENCODER_LEFT_B);
     bool newB = fast_read_pin(ENCODER_LEFT_B);
     bool newA = fast_read_pin(ENCODER_LEFT_CLK) ^ newB;
@@ -95,8 +97,8 @@ class Encoders {
   }
 
   void right_input_change() {
-    static bool oldA = false;
-    static bool oldB = false;
+    static volatile bool oldA = false;
+    static volatile bool oldB = false;
     bool newB = fast_read_pin(ENCODER_RIGHT_B);
     bool newA = fast_read_pin(ENCODER_RIGHT_CLK) ^ newB;
     int delta = ENCODER_RIGHT_POLARITY * ((oldA ^ newB) - (newA ^ oldB));
@@ -122,7 +124,7 @@ class Encoders {
    * systick event and the low-level controllers are only using the
    * changes in robot position and angle, not the speed directly.
    * If you need to see a value for the current speed or angular
-   * velocity in real units, use the robot_speed() and robot_omeag()
+   * velocity in real units, use the robot_speed() and robot_omega()
    * methods.
    *
    * Because update() is called from an interrupt service routine it
@@ -143,6 +145,8 @@ class Encoders {
       m_left_counter = 0;
       m_right_counter = 0;
     }
+    m_total_left += left_delta;
+    m_total_right += right_delta;
     float left_change = left_delta * MM_PER_COUNT_LEFT;
     float right_change = right_delta * MM_PER_COUNT_RIGHT;
     m_fwd_change = 0.5 * (right_change + left_change);
@@ -227,6 +231,12 @@ class Encoders {
   // internal use only to track encoder input edges
   int m_left_counter = 0;
   int m_right_counter = 0;
+
+ public:
+  /// These will overflow on a long straight but they are only used for short test runs
+  /// so that is fine
+  int m_total_right = 0;
+  int m_total_left = 0;
 };
 
 // A bit of indirection for convenience because the encoder instance is
