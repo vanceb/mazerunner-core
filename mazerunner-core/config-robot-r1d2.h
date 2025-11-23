@@ -65,9 +65,9 @@ const int RIGHT_CALIBRATION = 105;
            |_______|
 ##=============================##
 */
-const int FRONT_LEFT_CALIBRATION = 107;
-const int FRONT_RIGHT_CALIBRATION = 155;
-const int FRONT_REFERENCE = 630;  // front sum reading when mouse centered with wall ahead
+const int FRONT_LEFT_CALIBRATION = 105;
+const int FRONT_RIGHT_CALIBRATION = 105;
+const int FRONT_REFERENCE = 550;  // front sum reading when mouse centered with wall ahead
 
 // The front linear constant is the value of k needed to make the function
 // sensors.get_distance(sensor,k) return 68 when the mouse is backed up
@@ -272,7 +272,7 @@ const float ROT_KP = 16 * ROT_TM / (ROT_KM * ROT_ZETA * ROT_ZETA * ROT_TD * ROT_
 const float ROT_KD = LOOP_FREQUENCY * (8 * ROT_TM - ROT_TD) / (ROT_KM * ROT_TD);
 
 // controller constants for the steering controller
-const float STEERING_KP = 0.0025;
+const float STEERING_KP = 0.0025;  // 0.0025 first working version
 const float STEERING_KD = 0.00;
 const float STEERING_ADJUST_LIMIT = 1.0;  // deg/s
 
